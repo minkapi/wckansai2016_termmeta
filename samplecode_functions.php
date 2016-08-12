@@ -5,10 +5,28 @@ function return_meta_array() {
 		'term_kana' => array(
 			'name' => 'よみがな',
 			'note' => 'よみがなを入力してください',
+/*
+			'meta_args' => array(
+				'type'              => 'string',
+				'description'       => 'カテゴリー名のよみがなのメタ情報です',
+				'single'            => true,
+				'sanitize_callback' => 'sanitize_hiragana',
+				'auth_callback'     => null,
+				'show_in_rest'      => true,
+			),
+*/
 		),
 		'osusume_flag' => array(
 			'name' => 'おすすめマーク',
 			'note' => 'おすすめマークを表示する際は表示にチェックを入れてください',
+			'meta_args' => array(
+				'type'              => 'int',
+				'description'       => 'おすすめマークの表示フラグ。0は非表示、1は表示',
+				'single'            => true,
+				'sanitize_callback' => 'absint',
+				'auth_callback'     => null,
+				'show_in_rest'      => true,
+			),
 		),
 	);
 	return $meta_array;
@@ -100,3 +118,17 @@ function update_term_meta_array( $term_id ) {
 }
 add_action( 'created_category', 'update_term_meta_array' );
 add_action( 'edited_category',  'update_term_meta_array' );
+
+
+function sanitize_hiragana( $value ) {
+	return preg_replace( '/[^ぁ-ゞ]+/u', '', $value );
+}
+
+function register_term_meta_array() {
+	foreach ( return_meta_array() as $meta_key => $value ) {
+		if ( isset( $value['meta_args'] ) && is_array( $value['meta_args'] ) ) {
+			register_meta( 'term', $meta_key, $value['meta_args'] );
+		}
+	}
+}
+add_action( 'init', 'register_term_meta_array' );
